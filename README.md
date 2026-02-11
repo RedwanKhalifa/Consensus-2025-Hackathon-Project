@@ -1,60 +1,121 @@
-# IoT Data-as-a-Service Marketplace on Aptos
+# Consensus 2025 Hackathon Project
 
-This repository implements a reference stack for a decentralized marketplace that lets IoT device owners monetize telemetry streams while providing buyers with compliant, rule-governed access. The stack is tailored for the Aptos ecosystem and showcases how Forte-style real-world data assets can be tokenized, governed, and monetized.
+A full-stack reference implementation of an **IoT Data-as-a-Service marketplace on Aptos**.
+
+This project demonstrates how device owners can register IoT devices, publish paid data streams, and monetize subscriber access with an on-chain permission model plus off-chain compliance checks.
+
+## Architecture
+
+The repository is split into three coordinated components:
+
+- **`aptos-move/`** – Move smart contracts for device registration, staking, stream creation, subscriptions, and access recording.
+- **`offchain-service/`** – Node.js compliance/oracle service that validates subscriber access and evaluates policy rules before data delivery.
+- **`frontend/`** – React + Vite dashboard for viewing devices, streams, and marketplace activity.
+
+## Core Capabilities
+
+### 1) On-chain Device Registry
+
+- Stake-backed device registration.
+- Compliance controls (pause/resume).
+- Reputation updates.
+- Controlled stake release flows.
+
+### 2) On-chain Data Marketplace
+
+- Stream creation with pricing, duration, and policy metadata.
+- Time-bound subscription purchase and renewal.
+- On-chain access event tracking for transparent accounting.
+
+### 3) Off-chain Compliance + Oracle Layer
+
+- Reads Aptos on-chain state using the Aptos TypeScript SDK.
+- Runs policy checks (rate limits, expiry, geofencing).
+- Returns allow/deny decisions for telemetry access.
+- Prepares payloads/transactions for usage attestation.
+
+### 4) Web Dashboard
+
+- Presents device and stream data in a live interface.
+- Uses TanStack Query for refresh/caching.
+- Simulated wallet flow for hackathon UX and demos.
 
 ## Repository Structure
 
-- `aptos-move/` – Move package with on-chain modules for device registration, staking, stream publishing, and subscription lifecycle management.
-- `offchain-service/` – Node.js service that bridges on-chain state with off-chain storage, rule enforcement, and oracle callbacks.
-- `frontend/` – React dashboard for device owners and subscribers.
+```text
+.
+├── aptos-move/          # Move package (smart contracts)
+├── offchain-service/    # Node.js compliance & oracle service
+└── frontend/            # React dashboard
+```
 
-## Key Capabilities
+## Prerequisites
 
-### Device Registry (Move)
+- **Node.js 18+** and npm
+- **Aptos CLI** (for Move compile/test/deploy)
+- Access to an Aptos fullnode (testnet/devnet/local)
 
-- Device owners stake APT to register their hardware and metadata on-chain.
-- Admin-managed compliance toggles (pause/resume) and dynamic reputation scoring.
-- Deregistration workflow with controlled stake refunds.
+## Quick Start
 
-### Data Marketplace (Move)
+### A) Smart Contracts (Move)
 
-- Registered devices can publish metered data streams with pricing, duration, rate limits, and geography rules.
-- Buyers acquire time-bound subscriptions that mint verifiable permissions enforced by the compliance layer.
-- Access events are recorded on-chain to keep accounting and usage transparent.
+```bash
+cd aptos-move
+aptos move compile
+aptos move test
+```
 
-### Compliance + Oracle Layer (Node.js)
+Before deployment, set the package address in `aptos-move/Move.toml`.
 
-- Fetches Move resources to verify subscription state in real time.
-- Runs a configurable rules engine to enforce rate limits, expirations, and geofencing before devices transmit data.
-- Prepares sponsored Aptos transactions so relayers can attest to usage and settle revenue.
+### B) Off-chain Service
 
-### Dashboard (React)
+```bash
+cd offchain-service
+npm install
+npm run dev
+```
 
-- Visualizes registered devices, stakes, reputations, and published streams.
-- Uses the Aptos TypeScript SDK and TanStack Query for live data fetching.
-- Neon, sci-fi inspired UI to highlight key metrics for operators.
+Common environment variables:
 
-## Getting Started
+- `APTOS_NODE_URL` (default Aptos endpoint)
+- `CONTRACT_ADDRESS` (deployed Move package address)
+- `PORT` (default `4000`)
 
-1. **Move Modules**
-   ```bash
-   cd aptos-move
-   aptos move test
-   ```
-   Deploy using the Aptos CLI once you configure the `iot_marketplace` address.
+### C) Frontend
 
-2. **Off-chain Service**
-   ```bash
-   cd offchain-service
-   npm install
-   npm run dev
-   ```
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-3. **Frontend**
-   ```bash
-   cd frontend
-   npm install
-   npm run dev
-   ```
+Typical `.env` values:
 
-Configure environment variables as described in the individual package READMEs to point to your desired Aptos network and contract addresses.
+```env
+VITE_FULLNODE_URL=https://fullnode.testnet.aptoslabs.com/v1
+VITE_MARKETPLACE_ADDRESS=0x...
+```
+
+## Typical Development Flow
+
+1. Update Move modules and run `aptos move test`.
+2. Deploy contracts and set the deployed address in both services.
+3. Start the off-chain service and confirm access policy evaluation.
+4. Start the frontend and verify device/stream/subscription views.
+
+## Package-level Documentation
+
+For deeper usage details, see:
+
+- [`aptos-move/README.md`](aptos-move/README.md)
+- [`offchain-service/README.md`](offchain-service/README.md)
+- [`frontend/README.md`](frontend/README.md)
+
+## Hackathon Focus
+
+This codebase is optimized for demonstration and iteration speed. For production use, add:
+
+- stronger key management and signer isolation,
+- robust authn/authz and API hardening,
+- observability, retries, and durable queues,
+- comprehensive integration/security testing.
